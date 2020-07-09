@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -25,13 +26,87 @@ import android.widget.RelativeLayout;
  * https://www.isoufiane.com
  */
 public class EasyAd {
-    Context context;
-    Activity activity;
-    RelativeLayout layoutContainer;
-    WebView webView;
 
-    public EasyAd() {
+    // url format : https://api.grezz.dev/house-ad/banner.php?key=EASAD-JKLksFJKD982KJJSHD2
+
+    private String BASE_URL = "https://api.grezz.dev/house-ad/";
+    private String URL_AD_TYPE_BANNER = "banner.php";
+    private String URL_AD_TYPE_INTERSTITIAL = "interstitial.php";
+    private String URL_AD_TYPE_BANNER_MED_REQ = "banner_med_req.php";
+
+    private String EASAD_PREF = "EASAD_PREFERENCES_KEY";
+    private String BANNER_LABEL = "EASAD_BANNER_KEY";
+    private String BANNER_MED_REQ_LABEL = "EASAD_BANNER_MED_REQ_KEY";
+    private String INTERSTITIAL_LABEL = "EASAD_INTERSTITIAL_LABEL";
+
+    private String bannerKey;
+    private String bannerMedReqKey;
+    private String interstitialKey;
+    private Context context;
+
+    public static enum AdType {
+        BANNER,
+        BANNER_MED_REQ,
+        INTERSTITIAL
     }
+
+
+    public EasyAd(Context context) {
+        this.context = context;
+    }
+
+    public EasyAd setBannerKey(String bannerKey) {
+        this.bannerKey = bannerKey;
+        return this;
+    }
+
+    public EasyAd setInterstitialKey(String interstitialKey) {
+        this.interstitialKey = interstitialKey;
+        return this;
+    }
+
+    public EasyAd setBannerMedReqKey(String bannerMedReqKey) {
+        this.bannerMedReqKey = bannerMedReqKey;
+        return this;
+    }
+
+    public EasyAd build() {
+        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(BANNER_LABEL, bannerKey);
+        editor.putString(BANNER_MED_REQ_LABEL, bannerMedReqKey);
+        editor.putString(INTERSTITIAL_LABEL, interstitialKey);
+        editor.apply();
+        return this;
+    }
+
+    private String getKey(String LABEL) {
+        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, Context.MODE_PRIVATE);
+        return prefs.getString(LABEL, "-1");
+    }
+
+    public String buildUrl(AdType adType) {
+        String url = "-1";
+        switch (adType) {
+            case BANNER:
+                if (!getKey(BANNER_LABEL).equals("-1"))
+                    url = BASE_URL + URL_AD_TYPE_BANNER +"?key="+ getKey(BANNER_LABEL);
+                break;
+            case BANNER_MED_REQ:
+                if (!getKey(BANNER_MED_REQ_LABEL).equals("-1"))
+                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REQ +"?key="+ getKey(BANNER_MED_REQ_LABEL);
+                break;
+            case INTERSTITIAL:
+                if (!getKey(INTERSTITIAL_LABEL).equals("-1"))
+                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL +"?key="+ getKey(INTERSTITIAL_LABEL);
+        }
+        Log.d("Grezz","url: "+url);
+        return url;
+    }
+
+    // Set an id for each application ..
+    // Send id with url to retrieve specified data
+
 
     // init with key
     // lookup the key on server get necessary info .. update shared preferences data
@@ -109,7 +184,7 @@ public class EasyAd {
         }
 
         public void load() {
-            bannerWeb.loadUrl("https://api.grezz.dev/house-ad/banner.php");
+            bannerWeb.loadUrl(new EasyAd(getContext()).buildUrl(AdType.BANNER));
         }
 
         public void show() {
@@ -253,7 +328,7 @@ public class EasyAd {
                 @Override
                 public void onPageStarted(WebView view, String url, Bitmap favicon) {
                     super.onPageStarted(view, url, favicon);
-                    Log.d("Grezz","page started loading");
+                    Log.d("Grezz", "page started loading");
                 }
 
                 @Override
@@ -293,33 +368,35 @@ public class EasyAd {
                 window.setAttributes(lp);
             }
             d.create();
-            Log.d("Grezz","inside init");
+            Log.d("Grezz", "inside init");
         }
 
-        public void load(){
+        public void load() {
             webView.loadUrl(url);
         }
 
-        public void show(){
+        public void show() {
             d.show();
         }
 
-        public void hide(){
+        public void hide() {
             d.hide();
         }
 
-        public void destroy(){
+        public void destroy() {
             d.dismiss();
         }
 
-        private void close(){
+        private void close() {
             d.dismiss();
         }
 
         // Interface
         public interface InterstitialListener {
             void onLoadListener();
+
             void onCloseListener();
+
             void onErrorListener();
         }
 

@@ -15,6 +15,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        new EasyAd(this).setBannerKey("ksdgasdfgads").build();
+
         final EasyAd.WebBanner webBanner = findViewById(R.id.myBanner);
         final EasyAd.WebBannerMedRec webBannerMedRec = findViewById(R.id.myMedRecBanner);
         webBannerMedRec.setWebMedRecListener(new EasyAd.WebBannerMedRec.WebMedRecListener() {
