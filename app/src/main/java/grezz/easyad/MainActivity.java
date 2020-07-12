@@ -15,22 +15,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        new EasyAd(this).setBannerKey("ksdgasdfgads").build();
+        new EasyAd(this)
+                .setBannerKey("ksdgasdfgads")
+                .setBannerMedRecKey("sdfafsadfsdg")
+                .setInterstitialKey("sdfasfsfqweqweq")
+                .build();
 
         final EasyAd.WebBanner webBanner = findViewById(R.id.myBanner);
         final EasyAd.WebBannerMedRec webBannerMedRec = findViewById(R.id.myMedRecBanner);
-        webBannerMedRec.setWebMedRecListener(new EasyAd.WebBannerMedRec.WebMedRecListener() {
-            @Override
-            public void onLoadListener() {
-                Toast.makeText(MainActivity.this, "inters loaded", Toast.LENGTH_SHORT).show();
-                webBannerMedRec.show();
-            }
+        final EasyAd.Interstitial inters = new EasyAd.Interstitial(this);
 
-            @Override
-            public void onErrorListener() {
-                Toast.makeText(MainActivity.this, "Error loading", Toast.LENGTH_SHORT).show();
-            }
-        });
         webBanner.setWebBannerListener(new EasyAd.WebBanner.WebBannerListener() {
             @Override
             public void onLoadListener() {
@@ -43,10 +37,22 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "error banner load", Toast.LENGTH_SHORT).show();
             }
         });
-        webBannerMedRec.load();
         webBanner.load();
 
-        final EasyAd.Interstitial inters = new EasyAd.Interstitial(this);
+        webBannerMedRec.setWebMedRecListener(new EasyAd.WebBannerMedRec.WebMedRecListener() {
+            @Override
+            public void onLoadListener() {
+                Toast.makeText(MainActivity.this, "inters loaded", Toast.LENGTH_SHORT).show();
+                webBannerMedRec.show();
+            }
+
+            @Override
+            public void onErrorListener() {
+                Toast.makeText(MainActivity.this, "Error loading", Toast.LENGTH_SHORT).show();
+            }
+        });
+        webBannerMedRec.load();
+
         inters.setInterstitialListener(new EasyAd.Interstitial.InterstitialListener() {
             @Override
             public void onLoadListener() {

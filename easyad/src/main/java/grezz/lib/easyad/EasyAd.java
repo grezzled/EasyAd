@@ -1,6 +1,5 @@
 package grezz.lib.easyad;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -8,14 +7,17 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.net.http.SslError;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
@@ -31,20 +33,20 @@ public class EasyAd {
 
     private String BASE_URL = "https://api.grezz.dev/house-ad/";
     private String URL_AD_TYPE_BANNER = "banner.php";
-    private String URL_AD_TYPE_INTERSTITIAL = "interstitial.php";
-    private String URL_AD_TYPE_BANNER_MED_REQ = "banner_med_req.php";
+    private String URL_AD_TYPE_INTERSTITIAL = "inters.php";
+    private String URL_AD_TYPE_BANNER_MED_REC = "banner-medRec.php";
 
     private String EASAD_PREF = "EASAD_PREFERENCES_KEY";
     private String BANNER_LABEL = "EASAD_BANNER_KEY";
-    private String BANNER_MED_REQ_LABEL = "EASAD_BANNER_MED_REQ_KEY";
-    private String INTERSTITIAL_LABEL = "EASAD_INTERSTITIAL_LABEL";
+    private String BANNER_MED_REC_LABEL = "EASAD_BANNER_MED_REC_KEY";
+    private String INTERSTITIAL_LABEL = "EASAD_INTERSTITIAL_KEY";
 
     private String bannerKey;
-    private String bannerMedReqKey;
+    private String bannerMedRecKey;
     private String interstitialKey;
     private Context context;
 
-    public static enum AdType {
+    public enum AdType {
         BANNER,
         BANNER_MED_REQ,
         INTERSTITIAL
@@ -65,19 +67,21 @@ public class EasyAd {
         return this;
     }
 
-    public EasyAd setBannerMedReqKey(String bannerMedReqKey) {
-        this.bannerMedReqKey = bannerMedReqKey;
+    public EasyAd setBannerMedRecKey(String bannerMedRecKey) {
+        this.bannerMedRecKey = bannerMedRecKey;
         return this;
     }
 
-    public EasyAd build() {
-        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, context.MODE_PRIVATE);
+    public void build() {
+        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(BANNER_LABEL, bannerKey);
-        editor.putString(BANNER_MED_REQ_LABEL, bannerMedReqKey);
-        editor.putString(INTERSTITIAL_LABEL, interstitialKey);
+        if (bannerKey != null)
+            editor.putString(BANNER_LABEL, bannerKey);
+        if (bannerMedRecKey != null)
+            editor.putString(BANNER_MED_REC_LABEL, bannerMedRecKey);
+        if (interstitialKey != null)
+            editor.putString(INTERSTITIAL_LABEL, interstitialKey);
         editor.apply();
-        return this;
     }
 
     private String getKey(String LABEL) {
@@ -85,31 +89,24 @@ public class EasyAd {
         return prefs.getString(LABEL, "-1");
     }
 
-    public String buildUrl(AdType adType) {
+    private String buildUrl(AdType adType) {
         String url = "-1";
         switch (adType) {
             case BANNER:
                 if (!getKey(BANNER_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_BANNER +"?key="+ getKey(BANNER_LABEL);
+                    url = BASE_URL + URL_AD_TYPE_BANNER + "?key=" + getKey(BANNER_LABEL);
                 break;
             case BANNER_MED_REQ:
-                if (!getKey(BANNER_MED_REQ_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REQ +"?key="+ getKey(BANNER_MED_REQ_LABEL);
+                if (!getKey(BANNER_MED_REC_LABEL).equals("-1"))
+                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REC + "?key=" + getKey(BANNER_MED_REC_LABEL);
                 break;
             case INTERSTITIAL:
                 if (!getKey(INTERSTITIAL_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL +"?key="+ getKey(INTERSTITIAL_LABEL);
+                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL + "?key=" + getKey(INTERSTITIAL_LABEL);
         }
-        Log.d("Grezz","url: "+url);
+        Log.d("Grezz", "url: " + url);
         return url;
     }
-
-    // Set an id for each application ..
-    // Send id with url to retrieve specified data
-
-
-    // init with key
-    // lookup the key on server get necessary info .. update shared preferences data
 
     public static class WebBanner extends RelativeLayout {
 
@@ -149,6 +146,7 @@ public class EasyAd {
         }
 
         private void init() {
+            hide();
             View view = mInflater.inflate(R.layout.banner_web, this, true);
             bannerWeb = view.findViewById(R.id.banner_web);
             bannerWeb.setVerticalScrollBarEnabled(false);
@@ -167,6 +165,25 @@ public class EasyAd {
                     super.onReceivedError(view, request, error);
                     webBannerListener.onErrorListener();
                     loadError = true;
+                    Log.d("Grezz", "error loading banner");
+                    hide();
+                }
+
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                    super.onReceivedHttpError(view, request, errorResponse);
+                    webBannerListener.onErrorListener();
+                    loadError = true;
+                    Log.d("Grezz", "error loading banner");
+                    hide();
+                }
+
+                @Override
+                public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                    super.onReceivedSslError(view, handler, error);
+                    webBannerListener.onErrorListener();
+                    loadError = true;
+                    Log.d("Grezz", "error loading banner");
                     hide();
                 }
 
@@ -238,6 +255,7 @@ public class EasyAd {
         }
 
         private void init() {
+            hide();
             View view = mInflater.inflate(R.layout.banner_med_rec_web, this, true);
             view.setVisibility(GONE);
             webView = view.findViewById(R.id.medRec_web);
@@ -247,8 +265,10 @@ public class EasyAd {
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
-                    if (!loadError)
+                    if (!loadError) {
+                        show();
                         webMedRecListener.onLoadListener();
+                    }
                 }
 
                 @Override
@@ -256,6 +276,23 @@ public class EasyAd {
                     super.onReceivedError(view, request, error);
                     webMedRecListener.onErrorListener();
                     loadError = true;
+                    hide();
+                }
+
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                    super.onReceivedHttpError(view, request, errorResponse);
+                    webMedRecListener.onErrorListener();
+                    loadError = true;
+                    hide();
+                }
+
+                @Override
+                public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                    super.onReceivedSslError(view, handler, error);
+                    webMedRecListener.onErrorListener();
+                    loadError = true;
+                    hide();
                 }
 
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -273,7 +310,7 @@ public class EasyAd {
 
         public void load() {
             loadError = false;
-            webView.loadUrl("https://api.grezz.dev/house-ad/banner-medRec.php");
+            webView.loadUrl(new EasyAd(getContext()).buildUrl(AdType.BANNER_MED_REQ));
         }
 
         public void show() {
@@ -294,14 +331,15 @@ public class EasyAd {
 
         WebView webView;
         ImageView btnClose;
-        String url = "https://api.grezz.dev/house-ad/inters.php";
         InterstitialListener interstitialListener;
         Dialog d;
+        Context context;
 
         boolean loadError;
 
 
         public Interstitial(Context context) {
+            this.context = context;
             init(context);
         }
 
@@ -343,6 +381,23 @@ public class EasyAd {
                     super.onReceivedError(view, request, error);
                     interstitialListener.onErrorListener();
                     loadError = true;
+                    hide();
+                }
+
+                @Override
+                public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+                    super.onReceivedHttpError(view, request, errorResponse);
+                    interstitialListener.onErrorListener();
+                    loadError = true;
+                    hide();
+                }
+
+                @Override
+                public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
+                    super.onReceivedSslError(view, handler, error);
+                    interstitialListener.onErrorListener();
+                    loadError = true;
+                    hide();
                 }
 
                 public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -372,7 +427,7 @@ public class EasyAd {
         }
 
         public void load() {
-            webView.loadUrl(url);
+            webView.loadUrl(new EasyAd(context).buildUrl(AdType.INTERSTITIAL));
         }
 
         public void show() {
@@ -404,5 +459,4 @@ public class EasyAd {
             this.interstitialListener = interstitialListener;
         }
     }
-
 }
