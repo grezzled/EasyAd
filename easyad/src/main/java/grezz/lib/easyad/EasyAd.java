@@ -150,10 +150,10 @@ public class EasyAd {
         private void init() {
             hide();
             View view = mInflater.inflate(R.layout.banner_web, this, true);
-            WebSettings webSettings = bannerWeb.getSettings();
-            webSettings.setJavaScriptEnabled(true);
             bannerWeb = view.findViewById(R.id.banner_web);
             bannerWeb.setVerticalScrollBarEnabled(false);
+            WebSettings webSettings = bannerWeb.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             bannerWeb.setWebViewClient(new WebViewClient() {
                 @Override
                 public void onPageFinished(WebView view, String url) {
@@ -258,14 +258,14 @@ public class EasyAd {
             init();
         }
 
-        private void init() {
+        private void init(){
             hide();
             View view = mInflater.inflate(R.layout.banner_med_rec_web, this, true);
             view.setVisibility(GONE);
-            WebSettings webSettings = webView.getSettings();
-            webSettings.setJavaScriptEnabled(true);
             webView = view.findViewById(R.id.medRec_web);
             webView.setVerticalScrollBarEnabled(false);
+            WebSettings webSettings = webView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             webView.setWebViewClient(new WebViewClient() {
 
                 @Override
@@ -342,7 +342,6 @@ public class EasyAd {
         Context context;
 
         boolean loadError;
-
 
         public Interstitial(Context context) {
             this.context = context;
