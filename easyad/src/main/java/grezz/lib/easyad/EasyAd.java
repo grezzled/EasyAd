@@ -1,5 +1,6 @@
 package grezz.lib.easyad;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.webkit.SslErrorHandler;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
@@ -27,6 +29,7 @@ import android.widget.RelativeLayout;
  * Created by Soufiane on 04,July,2020
  * https://www.isoufiane.com
  */
+@SuppressLint("SetJavaScriptEnabled")
 public class EasyAd {
 
     // url format : https://api.grezz.dev/house-ad/banner.php?key=EASAD-JKLksFJKD982KJJSHD2
@@ -51,7 +54,6 @@ public class EasyAd {
         BANNER_MED_REQ,
         INTERSTITIAL
     }
-
 
     public EasyAd(Context context) {
         this.context = context;
@@ -148,6 +150,8 @@ public class EasyAd {
         private void init() {
             hide();
             View view = mInflater.inflate(R.layout.banner_web, this, true);
+            WebSettings webSettings = bannerWeb.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             bannerWeb = view.findViewById(R.id.banner_web);
             bannerWeb.setVerticalScrollBarEnabled(false);
             bannerWeb.setWebViewClient(new WebViewClient() {
@@ -258,6 +262,8 @@ public class EasyAd {
             hide();
             View view = mInflater.inflate(R.layout.banner_med_rec_web, this, true);
             view.setVisibility(GONE);
+            WebSettings webSettings = webView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             webView = view.findViewById(R.id.medRec_web);
             webView.setVerticalScrollBarEnabled(false);
             webView.setWebViewClient(new WebViewClient() {
@@ -360,6 +366,8 @@ public class EasyAd {
                 }
             });
 
+            WebSettings webSettings = webView.getSettings();
+            webSettings.setJavaScriptEnabled(true);
             webView.setVerticalScrollBarEnabled(false);
             webView.setWebViewClient(new WebViewClient() {
 
@@ -459,4 +467,5 @@ public class EasyAd {
             this.interstitialListener = interstitialListener;
         }
     }
+
 }
