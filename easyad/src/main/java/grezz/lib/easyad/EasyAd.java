@@ -442,7 +442,7 @@ public class EasyAd {
             d.show();
         }
 
-        public void hide() {
+        void hide() {
             d.hide();
         }
 
