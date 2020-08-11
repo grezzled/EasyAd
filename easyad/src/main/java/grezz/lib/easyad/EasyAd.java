@@ -44,6 +44,9 @@ public class EasyAd {
     private String BANNER_MED_REC_LABEL = "EASAD_BANNER_MED_REC_KEY";
     private String INTERSTITIAL_LABEL = "EASAD_INTERSTITIAL_KEY";
 
+    private String PREF_LAUNCH_COUNT = "PREF_LAUNCH_COUNT";
+    private String PREF_DATE_FIRST_LAUNCH = "PREF_DAYS_FIRST_LAUNCH";
+
     private String bannerKey;
     private String bannerMedRecKey;
     private String interstitialKey;
@@ -77,6 +80,13 @@ public class EasyAd {
     public void build() {
         SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
+
+        // update launch/days count
+
+        long launchCount = prefs.getLong(PREF_LAUNCH_COUNT, 0) + 1;
+        long dateFirstLaunch = prefs.getLong(PREF_DATE_FIRST_LAUNCH, System.currentTimeMillis());
+        editor.putLong(PREF_LAUNCH_COUNT, launchCount);
+        editor.putLong(PREF_DATE_FIRST_LAUNCH, dateFirstLaunch);
         if (bannerKey != null)
             editor.putString(BANNER_LABEL, bannerKey);
         if (bannerMedRecKey != null)
@@ -91,20 +101,30 @@ public class EasyAd {
         return prefs.getString(LABEL, "-1");
     }
 
+    private long getDateFirstLaunch() {
+        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, Context.MODE_PRIVATE);
+        return prefs.getLong(PREF_DATE_FIRST_LAUNCH, System.currentTimeMillis());
+    }
+
+    private long getLaunchCount() {
+        SharedPreferences prefs = context.getSharedPreferences(EASAD_PREF, Context.MODE_PRIVATE);
+        return prefs.getLong(PREF_LAUNCH_COUNT, 0) + 1;
+    }
+
     private String buildUrl(AdType adType) {
         String url = "-1";
         switch (adType) {
             case BANNER:
                 if (!getKey(BANNER_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_BANNER + "?key=" + getKey(BANNER_LABEL);
+                    url = BASE_URL + URL_AD_TYPE_BANNER + "?key=" + getKey(BANNER_LABEL) + "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();
                 break;
             case BANNER_MED_REQ:
                 if (!getKey(BANNER_MED_REC_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REC + "?key=" + getKey(BANNER_MED_REC_LABEL);
+                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REC + "?key=" + getKey(BANNER_MED_REC_LABEL)+ "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();;
                 break;
             case INTERSTITIAL:
                 if (!getKey(INTERSTITIAL_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL + "?key=" + getKey(INTERSTITIAL_LABEL);
+                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL + "?key=" + getKey(INTERSTITIAL_LABEL)+ "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();;
         }
         Log.d("Grezz", "url: " + url);
         return url;
@@ -258,7 +278,7 @@ public class EasyAd {
             init();
         }
 
-        private void init(){
+        private void init() {
             hide();
             View view = mInflater.inflate(R.layout.banner_med_rec_web, this, true);
             view.setVisibility(GONE);
@@ -388,6 +408,7 @@ public class EasyAd {
                     super.onReceivedError(view, request, error);
                     interstitialListener.onErrorListener();
                     loadError = true;
+                    Log.d("Grezz", "inters error : "+error.toString());
                     hide();
                 }
 
@@ -396,6 +417,8 @@ public class EasyAd {
                     super.onReceivedHttpError(view, request, errorResponse);
                     interstitialListener.onErrorListener();
                     loadError = true;
+                    Log.d("Grezz", "inters error : "+errorResponse.getStatusCode());
+
                     hide();
                 }
 
@@ -404,6 +427,7 @@ public class EasyAd {
                     super.onReceivedSslError(view, handler, error);
                     interstitialListener.onErrorListener();
                     loadError = true;
+                    Log.d("Grezz", "inters error : SSL");
                     hide();
                 }
 

@@ -16,9 +16,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         new EasyAd(this)
-                .setBannerKey("ksdgasdfgads")
-                .setBannerMedRecKey("sdfafsadfsdg")
-                .setInterstitialKey("sdfasfsfqweqweq")
+                .setBannerKey("had-app-D4FEF7B87D45AD6B")
+                .setBannerMedRecKey("had-app-8D9B24F82E26F254")
+                .setInterstitialKey("had-app-DC2AFE543935FCF4")
                 .build();
 
         final EasyAd.WebBanner webBanner = findViewById(R.id.myBanner);
@@ -42,13 +42,13 @@ public class MainActivity extends AppCompatActivity {
         webBannerMedRec.setWebMedRecListener(new EasyAd.WebBannerMedRec.WebMedRecListener() {
             @Override
             public void onLoadListener() {
-                Toast.makeText(MainActivity.this, "inters loaded", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Banner loaded", Toast.LENGTH_SHORT).show();
                 webBannerMedRec.show();
             }
 
             @Override
             public void onErrorListener() {
-                Toast.makeText(MainActivity.this, "Error loading", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Error loading Banner", Toast.LENGTH_SHORT).show();
             }
         });
         webBannerMedRec.load();
@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadListener() {
                 Log.d("Grezz","inside load listener");
+                Toast.makeText(MainActivity.this, "Inters Loaded", Toast.LENGTH_SHORT).show();
                 inters.show();
             }
 
