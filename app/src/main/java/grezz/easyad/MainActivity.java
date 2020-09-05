@@ -1,7 +1,9 @@
 package grezz.easyad;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -10,6 +12,7 @@ import grezz.lib.easyad.EasyAd;
 
 public class MainActivity extends AppCompatActivity {
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +32,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadListener() {
                 Toast.makeText(MainActivity.this, "banner load successfully", Toast.LENGTH_SHORT).show();
-                webBanner.show();
+                if (webBanner.isLoaded())
+                    webBanner.show();
             }
 
             @Override
@@ -43,7 +47,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onLoadListener() {
                 Toast.makeText(MainActivity.this, "Banner loaded", Toast.LENGTH_SHORT).show();
-                webBannerMedRec.show();
+                if (webBannerMedRec.isLoaded())
+                    webBannerMedRec.show();
             }
 
             @Override
@@ -56,19 +61,20 @@ public class MainActivity extends AppCompatActivity {
         inters.setInterstitialListener(new EasyAd.Interstitial.InterstitialListener() {
             @Override
             public void onLoadListener() {
-                Log.d("Grezz","inside load listener");
+                Log.d("Grezz", "inside load listener");
                 Toast.makeText(MainActivity.this, "Inters Loaded", Toast.LENGTH_SHORT).show();
-                inters.show();
+                if (inters.isLoaded())
+                    inters.show();
             }
 
             @Override
             public void onCloseListener() {
-                Log.d("Grezz","inside close listener");
+                Log.d("Grezz", "inside close listener");
             }
 
             @Override
             public void onErrorListener() {
-                Log.d("Grezz","inside error listener");
+                Log.d("Grezz", "inside error listener");
                 Toast.makeText(MainActivity.this, "Error Loading Inters", Toast.LENGTH_SHORT).show();
             }
 

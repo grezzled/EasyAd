@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,6 +25,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import androidx.annotation.RequiresApi;
 
 /**
  * Created by Soufiane on 04,July,2020
@@ -120,11 +123,13 @@ public class EasyAd {
                 break;
             case BANNER_MED_REQ:
                 if (!getKey(BANNER_MED_REC_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REC + "?key=" + getKey(BANNER_MED_REC_LABEL)+ "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();;
+                    url = BASE_URL + URL_AD_TYPE_BANNER_MED_REC + "?key=" + getKey(BANNER_MED_REC_LABEL) + "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();
+                ;
                 break;
             case INTERSTITIAL:
                 if (!getKey(INTERSTITIAL_LABEL).equals("-1"))
-                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL + "?key=" + getKey(INTERSTITIAL_LABEL)+ "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();;
+                    url = BASE_URL + URL_AD_TYPE_INTERSTITIAL + "?key=" + getKey(INTERSTITIAL_LABEL) + "&launchCount=" + getLaunchCount() + "&dateFirstLaunch=" + getDateFirstLaunch();
+                ;
         }
         Log.d("Grezz", "url: " + url);
         return url;
@@ -136,6 +141,7 @@ public class EasyAd {
         LayoutInflater mInflater;
         WebBannerListener webBannerListener;
         boolean loadError = false;
+        boolean isLoaded = false;
 
         public interface WebBannerListener {
             void onLoadListener();
@@ -161,6 +167,7 @@ public class EasyAd {
             init();
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public WebBanner(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
             super(context, attrs, defStyleAttr, defStyleRes);
             mInflater = LayoutInflater.from(context);
@@ -179,6 +186,7 @@ public class EasyAd {
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
                     if (!loadError) {
+                        isLoaded = true;
                         webBannerListener.onLoadListener();
                         show();
                     }
@@ -236,6 +244,10 @@ public class EasyAd {
             this.setVisibility(GONE);
         }
 
+        public boolean isLoaded(){
+            return isLoaded;
+        }
+
         public void setWebBannerListener(WebBannerListener webBannerListener) {
             this.webBannerListener = webBannerListener;
         }
@@ -247,6 +259,7 @@ public class EasyAd {
         WebView webView;
         WebMedRecListener webMedRecListener;
         boolean loadError;
+        boolean isLoaded = false;
 
         public interface WebMedRecListener {
             void onLoadListener();
@@ -272,6 +285,7 @@ public class EasyAd {
             init();
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public WebBannerMedRec(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
             super(context, attrs, defStyleAttr, defStyleRes);
             mInflater = LayoutInflater.from(context);
@@ -292,6 +306,7 @@ public class EasyAd {
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
                     if (!loadError) {
+                        isLoaded = true;
                         show();
                         webMedRecListener.onLoadListener();
                     }
@@ -347,6 +362,11 @@ public class EasyAd {
             this.setVisibility(GONE);
         }
 
+        public boolean isLoaded() {
+            return isLoaded;
+        }
+
+
         public void setWebMedRecListener(WebMedRecListener webMedRecListener) {
             this.webMedRecListener = webMedRecListener;
         }
@@ -360,14 +380,16 @@ public class EasyAd {
         InterstitialListener interstitialListener;
         Dialog d;
         Context context;
-
+        boolean isLoaded = false;
         boolean loadError;
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         public Interstitial(Context context) {
             this.context = context;
             init(context);
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
         private void init(Context context) {
             d = new Dialog(context);
             LayoutInflater inflater = LayoutInflater.from(context);
@@ -399,8 +421,10 @@ public class EasyAd {
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
-                    if (!loadError)
+                    if (!loadError){
+                        isLoaded = true;
                         interstitialListener.onLoadListener();
+                    }
                 }
 
                 @Override
@@ -408,16 +432,17 @@ public class EasyAd {
                     super.onReceivedError(view, request, error);
                     interstitialListener.onErrorListener();
                     loadError = true;
-                    Log.d("Grezz", "inters error : "+error.toString());
+                    Log.d("Grezz", "inters error : " + error.toString());
                     hide();
                 }
 
+                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                 @Override
                 public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
                     super.onReceivedHttpError(view, request, errorResponse);
                     interstitialListener.onErrorListener();
                     loadError = true;
-                    Log.d("Grezz", "inters error : "+errorResponse.getStatusCode());
+                    Log.d("Grezz", "inters error : " + errorResponse.getStatusCode());
 
                     hide();
                 }
@@ -467,6 +492,10 @@ public class EasyAd {
 
         void hide() {
             d.hide();
+        }
+
+        public boolean isLoaded() {
+            return isLoaded;
         }
 
         public void destroy() {
